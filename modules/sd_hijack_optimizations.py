@@ -522,6 +522,16 @@ def scaled_dot_product_attention_forward(self, x, context=None, mask=None, **kwa
     if shared.opts.upcast_attn:
         q, k, v = q.float(), k.float(), v.float()
 
+    global _coherence_json
+    global _attention_type
+    if not(shared.opts.attention_type == "Default"):
+      print('q.shape, k.shape, v.shape: ', q.shape, k.shape, v.shape)
+      mask = _coherence_attention_mask(q, k)
+
+#    if mask is not None:
+#        mask = __prepare_attention_mask(mask, sequence_length, self.heads, batch_size)
+#        mask = mask.view(batch_size, self.heads, -1, mask.shape[-1])
+
     # the output of sdp = (batch, num_heads, seq_len, head_dim)
     hidden_states = torch.nn.functional.scaled_dot_product_attention(
         q, k, v, attn_mask=mask, dropout_p=0.0, is_causal=False
@@ -536,6 +546,184 @@ def scaled_dot_product_attention_forward(self, x, context=None, mask=None, **kwa
     hidden_states = self.to_out[1](hidden_states)
     return hidden_states
 
+
+def _prepare_attention_mask(self, hidden_states, attention_mask):
+        seq_length, batch_size = hidden_states.shape[:2]
+
+        # get causal mask
+        causal_mask = hidden_states.new(seq_length, seq_length).float().fill_(-float("inf"))
+        causal_mask = torch.triu(causal_mask, 1)
+        extended_causal_mask = causal_mask[:seq_length, :seq_length][None, :, :].expand(
+            (batch_size,) + causal_mask.shape
+        )
+
+        # add usual attention mask
+        if attention_mask is not None:
+            extended_attention_mask = (1.0 - attention_mask[:, None, :]) * -10000.0
+            extended_attention_mask = extended_causal_mask + extended_attention_mask
+        else:
+            extended_attention_mask = extended_causal_mask
+        return extended_attention_mask.repeat(self.config.num_decoder_attention_heads, 1, 1).to(hidden_states.dtype)
+
+def __prepare_attention_mask(attention_mask, target_length, heads, batch_size=None):
+
+        head_size = heads
+        if attention_mask is None:
+            return attention_mask
+
+        if attention_mask.shape[-1] != target_length:
+            if attention_mask.device.type == "mps":
+                # HACK: MPS: Does not support padding by greater than dimension of input tensor.
+                # Instead, we can manually construct the padding tensor.
+                padding_shape = (attention_mask.shape[0], attention_mask.shape[1], target_length)
+                padding = torch.zeros(padding_shape, dtype=attention_mask.dtype, device=attention_mask.device)
+                attention_mask = torch.cat([attention_mask, padding], dim=2)
+            else:
+                attention_mask = F.pad(attention_mask, (0, target_length), value=0.0)
+
+        if attention_mask.shape[0] < batch_size * head_size:
+            attention_mask = attention_mask.repeat_interleave(head_size, dim=0)
+        return attention_mask
+
+#_attention_type = "Random"
+#_attention_type = "default"
+#_attention_type = "coherence"
+_g_cpu = torch.Generator()
+if not (shared.opts.random_attention_mask_seed == -1):
+  _g_cpu.manual_seed(shared.opts.random_attention_mask_seed)
+_g_gpu = torch.Generator(device='cuda')
+if not (shared.opts.random_attention_mask_seed == -1):
+  _g_gpu.manual_seed(shared.opts.random_attention_mask_seed)
+
+def _coherence_attention_mask(query: torch._C.Value, key: torch._C.Value
+) -> torch._C.Value:
+#    global _coherence_json
+#    global _attention_type
+
+    L = query.shape[2]
+    S = key.shape[2]
+#    print('L: '+str(L)+', S: '+str(S))
+#    L = 400
+#    S = 400
+#    mask = torch.ones(L, S, device=query.device, dtype=torch.bool).tril(diagonal=0)
+    mask = torch.ones(query.shape[0], query.shape[1], L, S, device=query.device, dtype=torch.bool).tril(diagonal=0)
+#    attn_mask = torch.ones(L, S, device=query.device, dtype=query.dtype).tril(diagonal=0)
+#    attn_mask = torch.zeros(L, S, device=query.device, dtype=query.dtype)
+#    attn_mask = torch.ones(L, S, device=query.device, dtype=query.dtype)
+
+#    print(' '.join(globals()).split(' '))
+
+# psytrance visuals 3295013263    
+
+    if shared.opts.attention_type == "Random":
+#    if True:
+#    if False:
+#      attn_mask = torch.rand(L, S, device=query.device, dtype=query.dtype)
+#      attn_mask = torch.rand(query.shape[0], query.shape[1], L, S, device=query.device, dtype=query.dtype)
+#      attn_mask = -1/torch.ones(query.shape[0], query.shape[1], L, S, device=query.device, dtype=query.dtype)+1
+#      g_gpu = torch.Generator(device=query.device)
+#      g_gpu.manual_seed(3295013263)
+#      g_gpu_rand=torch.rand(1, device=query.device, dtype=query.dtype, generator=g_gpu);
+#      g_cpu_rand=torch.rand(1, generator=_g_cpu);
+#      attn_mask = (torch.zeros(query.shape[0], query.shape[1], L, S, device=query.device, dtype=query.dtype)-1)*g_cpu_rand[0]
+#      attn_mask = (torch.zeros(query.shape[0], query.shape[1], L, S, device=query.device, dtype=query.dtype)-1)*g_gpu_rand[0]
+      attn_mask = (torch.rand(query.shape[0], query.shape[1], L, S, device=query.device, dtype=query.dtype, generator=_g_gpu)-1)*shared.opts.random_attention_mask_scale
+#      attn_mask = (torch.rand(query.shape[0], query.shape[1], L, S, device=query.device, dtype=query.dtype, generator=g_gpu)-1)*1
+#      attn_mask = torch.zeros(query.shape[0], query.shape[1], L, S, device=query.device, dtype=query.dtype)
+      
+    if shared.opts.attention_type == "Coherence":
+#    if True:
+#    if False:
+      import json
+      import numpy as np
+      coherence_tril = json.loads(shared.opts.coherence_json)
+      coherence_tril_tensor = torch.Tensor(coherence_tril).to(query.device).type(query.dtype)
+      lower_indices = np.tril_indices(L, k = -1)
+      attn_mask = torch.zeros(L, S, device=query.device, dtype=query.dtype)
+#      print('lower_indices: '+str(lower_indices))
+      attn_mask[lower_indices] = coherence_tril_tensor
+#    print('attn_mask: '+str(attn_mask))
+#    print('mask: '+str(mask))
+#    attn_mask = attn_mask.masked_fill(mask==False, -float('inf'))
+        
+    return attn_mask
+
+def __coherence_attention_mask(query: torch._C.Value, key: torch._C.Value
+) -> torch._C.Value:
+    global _coherence_json
+    global _attention_type
+
+    L = query.shape[2]
+    S = key.shape[2]
+    print('L: '+str(L)+', S: '+str(S))
+#    L = 400
+#    S = 400
+    mask = torch.ones(L, S, device=query.device, dtype=torch.bool).tril(diagonal=0)
+#    attn_mask = torch.ones(L, S, device=query.device, dtype=query.dtype).tril(diagonal=0)
+#    attn_mask = torch.zeros(L, S, device=query.device, dtype=query.dtype)
+#    attn_mask = torch.ones(L, S, device=query.device, dtype=query.dtype)
+
+#    print(' '.join(globals()).split(' '))
+    
+    if shared.opts.attention_type == "Random":
+#    if True:
+#    if False:
+#      attn_mask = torch.rand(L, S, device=query.device, dtype=query.dtype)/100
+      attn_mask = torch.rand(L, S, device=query.device, dtype=query.dtype)/1
+#      attn_mask = torch.zeros(L, S, device=query.device, dtype=query.dtype)
+#      attn_mask = attn_mask.masked_fill(mask==False, -65504.)
+      attn_mask = attn_mask.reshape([1, 1, L, S])
+      if L == 1:
+#      attn_mask = torch.zeros(1, 1, L, S, device=query.device, dtype=query.dtype)
+#      attn_mask = torch.rand(1, 1, L, S, device=query.device, dtype=query.dtype)/100
+        attn_mask = torch.rand(1, 1, L, S, device=query.device, dtype=query.dtype)/1
+    if shared.opts.attention_type == "Coherence":
+#    if True:
+#    if False:
+      import json
+      import numpy as np
+      coherence_tril = json.loads(_coherence_json)
+      coherence_tril_tensor = torch.Tensor(coherence_tril).to(query.device).type(query.dtype)
+      L_max = shared.settings['truncation_length']-1
+      mask_max = torch.ones(L_max, L_max, device=query.device, dtype=torch.bool).tril(diagonal=0)
+      lower_indices = np.tril_indices(L_max, k = -1)
+      attn_mask_max = torch.zeros(L_max, L_max, device=query.device, dtype=query.dtype)
+#      print('lower_indices: '+str(lower_indices))
+      attn_mask_max[lower_indices] = coherence_tril_tensor
+#      attn_mask_max = torch.rand(L_max, L_max, device=query.device, dtype=query.dtype)/1
+
+      attn_mask = torch.zeros(L, S, device=query.device, dtype=query.dtype)
+#      attn_mask = torch.rand(L, S, device=query.device, dtype=query.dtype)
+
+#      attn_mask = torch.zeros(L, S, device=query.device, dtype=query.dtype)
+#      print('lower_indices: '+str(lower_indices))
+#      attn_mask[lower_indices] = coherence_tril_tensor
+#    print('attn_mask: '+str(attn_mask))
+#    print('mask: '+str(mask))
+#    attn_mask = attn_mask.masked_fill(mask==False, -float('inf'))
+      attn_mask_max = attn_mask_max.masked_fill(mask_max==False, -65504.)
+      if L==1:
+        attn_mask[:,:] = attn_mask_max[S-1,:S]
+      else:
+        attn_mask[:,:] = attn_mask_max[:L,:S]
+      attn_mask = attn_mask.reshape([1, 1, L, S])
+#      if L == 1:
+#      attn_mask = torch.zeros(1, 1, L, S, device=query.device, dtype=query.dtype)
+#      attn_mask = torch.rand(1, 1, L, S, device=query.device, dtype=query.dtype)/100
+#        attn_mask = attn_mask_max[:,:,S-1,:S]
+
+
+#      attn_mask = torch.rand(L, S, device=query.device, dtype=query.dtype)/1
+#      attn_mask = torch.zeros(L, S, device=query.device, dtype=query.dtype)
+#      attn_mask = attn_mask.masked_fill(mask==False, -65504.)
+#      attn_mask = attn_mask.reshape([1, 1, L, S])
+#      if L == 1:
+#      attn_mask = torch.zeros(1, 1, L, S, device=query.device, dtype=query.dtype)
+#      attn_mask = torch.rand(1, 1, L, S, device=query.device, dtype=query.dtype)/100
+#        attn_mask = torch.rand(1, 1, L, S, device=query.device, dtype=query.dtype)/1
+        
+    return attn_mask
+    
 
 def scaled_dot_product_no_mem_attention_forward(self, x, context=None, mask=None, **kwargs):
     with torch.backends.cuda.sdp_kernel(enable_flash=True, enable_math=True, enable_mem_efficient=False):
