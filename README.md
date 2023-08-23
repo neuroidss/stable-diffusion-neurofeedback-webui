@@ -1,3 +1,23 @@
+# Stable Diffusion neurofeedback web UI
+possibility to stream EEG coherence into generation: 
+https://github.com/neuroidss/timeflux_neurofeedback_inverse_gamepad/blob/master/examples/neurofeedback_coherence_text_generation.yaml#L212
+```yaml
+      module: timeflux_neurofeedback_inverse_gamepad.nodes.gradiostreamer
+      class: GradioStreamer
+```
+
+here where eeg coherence applied to transformer attention in generation:
+[https://github.com/neuroidss/text-generation-neurofeedback-webui/blob/main/modules/llama_attn_hijack.py#L155](https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/blob/master/modules/sd_hijack_optimizations.py#L529C1-L538C6)
+```python
+      mask = _coherence_attention_mask(q, k)
+
+    # the output of sdp = (batch, num_heads, seq_len, head_dim)
+    hidden_states = torch.nn.functional.scaled_dot_product_attention(
+        q, k, v, attn_mask=mask, dropout_p=0.0, is_causal=False
+    )
+```
+
+
 # Stable Diffusion web UI
 A browser interface based on Gradio library for Stable Diffusion.
 
