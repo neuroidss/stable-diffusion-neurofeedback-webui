@@ -7,7 +7,7 @@ https://github.com/neuroidss/timeflux_neurofeedback_inverse_gamepad/blob/master/
 ```
 
 here where eeg coherence applied to transformer attention in generation:
-[https://github.com/neuroidss/text-generation-neurofeedback-webui/blob/main/modules/llama_attn_hijack.py#L155](https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/blob/master/modules/sd_hijack_optimizations.py#L529C1-L538C6)
+[https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/blob/master/modules/sd_hijack_optimizations.py#L529C1-L538C6](https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/blob/master/modules/sd_hijack_optimizations.py#L529C1-L538C6)
 ```python
       mask = _coherence_attention_mask(q, k)
 
