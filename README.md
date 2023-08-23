@@ -17,6 +17,10 @@ here where eeg coherence applied to transformer attention in generation:
     )
 ```
 
+demo of random to transformer attention mask:
+https://cdn.discordapp.com/attachments/850243091088146443/1140735893490110464/download_33.mp4
+composition result:
+https://drive.google.com/file/d/1MnvSoxS7xt6gL_bLUJbp-MMurMKCbeJ1/view?usp=drive_link
 
 # Stable Diffusion web UI
 A browser interface based on Gradio library for Stable Diffusion.
