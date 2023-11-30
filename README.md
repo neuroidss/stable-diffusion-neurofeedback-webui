@@ -17,10 +17,24 @@ here where eeg coherence applied to transformer attention in generation:
     )
 ```
 
-demo of random to transformer attention mask:
+demo of random to attention mask:
 https://cdn.discordapp.com/attachments/850243091088146443/1140735893490110464/download_33.mp4
 composition result:
 https://drive.google.com/file/d/1MnvSoxS7xt6gL_bLUJbp-MMurMKCbeJ1/view?usp=drive_link
+
+demo of eeg alpha coherence to attention mask:
+https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/raw/master/download%20(6).mp4
+https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/raw/master/download%20(7).mp4
+eeg alpha coherence attention mask:
+https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/blob/master/attn_mask_image_rgb%20(3rd%20copy).jpg?raw=true
+https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/blob/master/attn_mask_image_rgb%20(4th%20copy).jpg?raw=true
+https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/blob/master/attn_mask_image_rgb%20(5th%20copy).jpg?raw=true
+https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/blob/master/attn_mask_image_rgb%20(6th%20copy).jpg?raw=true
+https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/blob/master/attn_mask_image_rgb%20(7th%20copy).jpg?raw=true
+https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/blob/master/attn_mask_image_rgb%20(8th%20copy).jpg?raw=true
+https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/blob/master/attn_mask_image_rgb%20(another%20copy).jpg?raw=true
+https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/blob/master/attn_mask_image_rgb.jpg?raw=true
+
 
 # Stable Diffusion web UI
 A browser interface based on Gradio library for Stable Diffusion.
