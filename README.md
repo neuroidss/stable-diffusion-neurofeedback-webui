@@ -1,12 +1,12 @@
 # Stable Diffusion neurofeedback web UI
 possibility to stream EEG coherence into generation: 
-https://github.com/neuroidss/timeflux_neurofeedback_inverse_gamepad/blob/master/examples/neurofeedback_coherence_text_generation.yaml#L212
+https://github.com/neuroidss/timeflux_neurofeedback_inverse_gamepad/blob/master/examples/neurofeedback_coherence_stable_diffusion.yaml#L212
 ```yaml
-      module: timeflux_neurofeedback_inverse_gamepad.nodes.gradiostreamer
-      class: GradioStreamer
+      module: timeflux_neurofeedback_inverse_gamepad.nodes.requestsstreamer
+      class: RequestsStreamer
 ```
 
-here where eeg coherence applied to transformer attention in generation:
+here where eeg coherence applied to attention in generation:
 [https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/blob/master/modules/sd_hijack_optimizations.py#L529C1-L538C6](https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/blob/master/modules/sd_hijack_optimizations.py#L529C1-L538C6)
 ```python
       mask = _coherence_attention_mask(q, k)
