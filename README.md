@@ -23,9 +23,13 @@ composition result:
 https://drive.google.com/file/d/1MnvSoxS7xt6gL_bLUJbp-MMurMKCbeJ1/view?usp=drive_link
 
 demo of eeg alpha coherence to attention mask:
+
 ![](https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/raw/master/download%20(6).gif)
+
 ![](https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/raw/master/download%20(7).gif)
+
 eeg alpha coherence attention mask:
+
 ![](https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/blob/master/attn_mask_image_rgb%20(3rd%20copy).jpg?raw=true)
 ![](https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/blob/master/attn_mask_image_rgb%20(4th%20copy).jpg?raw=true)
 ![](https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/blob/master/attn_mask_image_rgb%20(5th%20copy).jpg?raw=true)
