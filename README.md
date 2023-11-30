@@ -30,14 +30,14 @@ demo of eeg alpha coherence to attention mask:
 
 eeg alpha coherence attention mask:
 
-![](https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/blob/master/attn_mask_image_rgb%20(3rd%20copy).jpg?raw=true)
-![](https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/blob/master/attn_mask_image_rgb%20(4th%20copy).jpg?raw=true)
-![](https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/blob/master/attn_mask_image_rgb%20(5th%20copy).jpg?raw=true)
-![](https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/blob/master/attn_mask_image_rgb%20(6th%20copy).jpg?raw=true)
-![](https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/blob/master/attn_mask_image_rgb%20(7th%20copy).jpg?raw=true)
-![](https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/blob/master/attn_mask_image_rgb%20(8th%20copy).jpg?raw=true)
-![](https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/blob/master/attn_mask_image_rgb%20(another%20copy).jpg?raw=true)
-![](https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/blob/master/attn_mask_image_rgb.jpg?raw=true)
+![](https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/blob/master/attn_mask_image_rgb%20(3rd%20copy).jpg)
+![](https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/blob/master/attn_mask_image_rgb%20(4th%20copy).jpg)
+![](https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/blob/master/attn_mask_image_rgb%20(5th%20copy).jpg)
+![](https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/blob/master/attn_mask_image_rgb%20(6th%20copy).jpg)
+![](https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/blob/master/attn_mask_image_rgb%20(7th%20copy).jpg)
+![](https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/blob/master/attn_mask_image_rgb%20(8th%20copy).jpg)
+![](https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/blob/master/attn_mask_image_rgb%20(another%20copy).jpg)
+![](https://github.com/neuroidss/stable-diffusion-neurofeedback-webui/blob/master/attn_mask_image_rgb.jpg)
 
 
 # Stable Diffusion web UI
