@@ -525,7 +525,7 @@ def scaled_dot_product_attention_forward(self, x, context=None, mask=None, **kwa
     global _coherence_json
     global _attention_type
     if not(shared.opts.attention_type == "Default"):
-      print('q.shape, k.shape, v.shape: ', q.shape, k.shape, v.shape)
+      ##print('q.shape, k.shape, v.shape: ', q.shape, k.shape, v.shape)
       mask = _coherence_attention_mask(q, k)
 
 #    if mask is not None:
@@ -634,14 +634,60 @@ def _coherence_attention_mask(query: torch._C.Value, key: torch._C.Value
     if shared.opts.attention_type == "Coherence":
 #    if True:
 #    if False:
-      import json
-      import numpy as np
-      coherence_tril = json.loads(shared.opts.coherence_json)
-      coherence_tril_tensor = torch.Tensor(coherence_tril).to(query.device).type(query.dtype)
-      lower_indices = np.tril_indices(L, k = -1)
-      attn_mask = torch.zeros(L, S, device=query.device, dtype=query.dtype)
+
+      attn_mask = (torch.rand(query.shape[0], query.shape[1], L, S, device=query.device, dtype=query.dtype, generator=_g_gpu)*0-1)*shared.opts.random_attention_mask_scale
+#      attn_mask = (torch.rand(query.shape[0], query.shape[1], L, S, device=query.device, dtype=query.dtype, generator=_g_gpu)-1)*shared.opts.random_attention_mask_scale
+#      print('attn_mask.shape: '+str(attn_mask.shape))
+      if attn_mask.shape[2] == attn_mask.shape[3]:
+        import json
+        import numpy as np
+        coherence_tril = json.loads(shared.opts.coherence_json)
+#        coherence_tril_tensor = torch.Tensor(coherence_tril).to(query.device).type(query.dtype)
+        n_chan = 0
+#        while (n_chan)*(n_chan-1)/2<coherence_tril_tensor.shape[0]:
+        while (n_chan)*(n_chan)<len(coherence_tril):
+#        while (n_chan)*(n_chan-1)/2<len(coherence_tril):
+          n_chan = n_chan + 1
+        lower_indices = np.indices((n_chan, n_chan))
+        lower_indices = np.reshape(lower_indices, (len(lower_indices), len(lower_indices[0])*len(lower_indices[0][0])))
+        lower_indices = tuple(lower_indices)
+#        print(lower_indices)
+#      lower_indices = np.tril_indices(L, k = -1)
+        attn_mask_ = np.zeros((n_chan, n_chan))
+#        attn_mask_ = torch.zeros(n_chan, n_chan, device=query.device, dtype=query.dtype)
+#      attn_mask = torch.zeros(L, S, device=query.device, dtype=query.dtype)
+#      print('attn_mask.shape: '+str(attn_mask.shape))
+#      print('coherence_tril_tensor.shape: '+str(coherence_tril_tensor.shape))
 #      print('lower_indices: '+str(lower_indices))
-      attn_mask[lower_indices] = coherence_tril_tensor
+#        attn_mask_[lower_indices] = coherence_tril_tensor
+#        attn_mask_[lower_indices1] = coherence_tril_tensor
+        attn_mask_[lower_indices] = coherence_tril
+#        attn_mask_[lower_indices1] = coherence_tril
+      
+#        attn_mask_ = _scale_array(attn_mask_, query.shape[0])
+        from PIL import Image
+        attn_mask_image = Image.fromarray(attn_mask_*255)
+        attn_mask_image_rgb = attn_mask_image.convert('RGB')
+        attn_mask_image_rgb.save("attn_mask_image_rgb.jpg") 
+        newsize = (attn_mask.shape[2], attn_mask.shape[3])
+        attn_mask_image = attn_mask_image.resize(newsize)
+        attn_mask_ = np.asarray(attn_mask_image)/255
+
+#      attn_mask_ = attn_mask.reshape([1, 1, L, S])
+        attn_mask_ = (attn_mask_) * shared.opts.random_attention_mask_scale
+        attn_mask_ = torch.from_numpy(attn_mask_)
+        attn_mask_.to(device=query.device, dtype=query.dtype)
+        shape00 = len(coherence_tril)
+#        shape00 = coherence_tril_tensor.shape[0]
+        index00 = 0
+        for shape0 in range(attn_mask.shape[0]):
+          for shape1 in range(attn_mask.shape[1]):
+            attn_mask[shape0][shape1] = attn_mask_
+#          for shape2 in range(attn_mask.shape[2]):
+#            for shape3 in range(attn_mask.shape[3]):
+#              attn_mask[shape0][shape1][shape2][shape3] = (coherence_tril_tensor[index00%shape00]-1) * shared.opts.random_attention_mask_scale
+#              index00 = index00 + 1
+
 #    print('attn_mask: '+str(attn_mask))
 #    print('mask: '+str(mask))
 #    attn_mask = attn_mask.masked_fill(mask==False, -float('inf'))
